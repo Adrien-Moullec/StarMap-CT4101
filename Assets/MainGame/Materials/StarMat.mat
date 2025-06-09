@@ -93,7 +93,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EmissionAmount: 0.15
+    - _EmissionAmount: 1
     - _EnvironmentReflections: 1
     - _Float: 0.15
     - _GlossMapScale: 0
@@ -116,8 +116,8 @@ Material:
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0, g: 0.81960785, b: 0.6707551, a: 1}
-    - _Color1: {r: 0.025371075, g: 0, b: 1, a: 0}
-    - _Color2: {r: 1, g: 1, b: 1, a: 0}
+    - _Color1: {r: 0.7191398, g: 0.7853171, b: 0.34045854, a: 1}
+    - _Color2: {r: 0.97334045, g: 0.91343087, b: 0.6183363, a: 1}
     - _Color_1: {r: 0.82781297, g: 0.9528302, b: 0.03146139, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}

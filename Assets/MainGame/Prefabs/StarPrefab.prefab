@@ -5136,11 +5136,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gravitationCost: 0
   particles: {fileID: 7022763011967258066}
-  starBody: {fileID: 2813767422550794934}
   starUi: {fileID: 5740265525812984403}
   starNameDisplay: {fileID: 647963957629083403}
   planetsParent: {fileID: 7582747986535943093}
   backDrop: {fileID: 7335303997561302910}
+  starBody: {fileID: 2100000, guid: c825d8356b30c6c47b9bb3f6d8d3e9e1, type: 2}
 --- !u!1 &6555035371947714502
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,9 +1,7 @@
 //Using _starlist, check the start & destination then try find a path
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PathFinder : MonoBehaviour {
 

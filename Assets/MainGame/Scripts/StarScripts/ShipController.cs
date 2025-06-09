@@ -24,7 +24,7 @@ public class ShipController : MonoBehaviour, IInteract
 
 
     public void Interact() {
-        print("INTERACTED");
+
     }
 
     //Sets points for bezier curve & starts ship flight

@@ -54,12 +54,14 @@ public class StarGeneration : MonoBehaviour {
 
     public void GenerateStarList() {
 
+        _starList.Clear();
         canvas = UIManager.Instance;
 
         for (int i = 0; i < canvas.spawnCount; i++) {
             Vector3 pos = new Vector3(UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange), UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange), UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange));
-            GameObject tempStar = Instantiate(starPrefab, pos, Quaternion.identity);
-            tempStar.transform.SetParent(starListParent.transform, true);
+            PoolManager.Instance.TrySpawnFromPool<StarController>("star", out StarController tempStar);
+            tempStar.OnStarSpawn();
+            _starList.Add(tempStar);
         }
         StartCoroutine(StarPathsCalc());
     }
@@ -96,9 +98,7 @@ public class StarGeneration : MonoBehaviour {
 
     //Resets everything to generate new stars
     public void ResetInitiation() {
-        foreach (StarController star in _starList) {
-            Destroy(star.gameObject);
-        }
+        PoolManager.Instance.DespawnByTag("star");
 
         _pathFinder.allPathMesh.SetActive(true); _pathFinder.bestPathMesh.SetActive(false);
         _meshGenAllPaths.mesh.Clear();

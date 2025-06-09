@@ -56,9 +56,7 @@ public class UIManager : MonoBehaviour {
 
     //Colors
     Color imageColor;
-    Color textColor;
-
-    
+    Color textColor;    
 
     private void Awake() {
         Instance = this;

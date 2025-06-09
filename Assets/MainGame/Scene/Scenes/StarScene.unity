@@ -2392,6 +2392,9 @@ MonoBehaviour:
   textLeapDistance: {fileID: 1739736858}
   textMinStarSize: {fileID: 1705768823}
   textMaxStarSize: {fileID: 577975637}
+  loadingStarText: {fileID: 29230879}
+  loadingStarImage: {fileID: 1657091006}
+  continueLoad: 0
 --- !u!1 &641702979
 GameObject:
   m_ObjectHideFlags: 0
@@ -5868,7 +5871,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 215480ca50fb02f47a89b76a2e5b5f1a, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -5999,7 +6002,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 129b5afdd9c8de7498177314704b54bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  continueLoad: 0
 --- !u!114 &1657091006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6221,9 +6223,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pools:
-  - tag: star
+  - poolParent: {fileID: 0}
+    tag: star
     prefab: {fileID: 3492866336657974472, guid: f77f9020751d085468bbd259cf8d3035, type: 3}
-    size: 0
+    size: 50
 --- !u!4 &1675056175
 Transform:
   m_ObjectHideFlags: 0
@@ -6232,12 +6235,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1675056173}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 563.8117, y: 710.9878, z: -698.5462}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2135102766}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1677810575
 GameObject:
@@ -8496,6 +8499,7 @@ Transform:
   - {fileID: 494442853}
   - {fileID: 383500813}
   - {fileID: 5785163}
+  - {fileID: 1675056175}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2135137490
@@ -8737,4 +8741,3 @@ SceneRoots:
   - {fileID: 267139837}
   - {fileID: 624247531}
   - {fileID: 2135102766}
-  - {fileID: 1675056175}

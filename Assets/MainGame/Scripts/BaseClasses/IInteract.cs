@@ -6,3 +6,6 @@ public interface IInteract
 {
     void Interact();
 }
+public interface IPool {
+    void OnPooled();
+}
