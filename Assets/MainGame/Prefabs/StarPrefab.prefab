@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0.8972964}
-  m_SizeDelta: {x: 13.14, y: 2.7}
+  m_SizeDelta: {x: 19.65, y: 5.3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &5740265525812984403
 Canvas:
@@ -194,12 +194,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 1
+  m_fontSize: 1.8
   m_fontSizeBase: 1
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 0.1
+  m_fontSizeMax: 2
   m_fontStyle: 33
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -264,7 +264,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.07135137, y: 0.07135136, z: 0.07135136}
+  m_LocalScale: {x: 0.90999997, y: 0.90999997, z: 0.90999997}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8509636179513812521}
@@ -5140,7 +5140,7 @@ MonoBehaviour:
   starNameDisplay: {fileID: 647963957629083403}
   planetsParent: {fileID: 7582747986535943093}
   backDrop: {fileID: 7335303997561302910}
-  starBody: {fileID: 2100000, guid: c825d8356b30c6c47b9bb3f6d8d3e9e1, type: 2}
+  sourceMat: {fileID: 0}
 --- !u!1 &6555035371947714502
 GameObject:
   m_ObjectHideFlags: 0

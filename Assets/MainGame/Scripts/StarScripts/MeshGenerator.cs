@@ -3,6 +3,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ProceduralPrimitives;
 
 public class MeshGenerator : MonoBehaviour {
 
@@ -46,6 +47,7 @@ public class MeshGenerator : MonoBehaviour {
 
     //Generate mesh for multiple paths
     public IEnumerator GeneratePossiblePaths(List<Vector3> starPoints1, List<Vector3> starPoints2) {
+
 
         //Sets up for mesh gen
         upMult = Vector3.up * pathWidth;

@@ -58,8 +58,9 @@ public class PoolManager : MonoBehaviour
             Debug.LogError("No dictionary with this ID");
             return null;
         }
-
+        
         GameObject obj = poolDictionary[poolId].Dequeue();
+        obj.GetComponent<IPool>().OnPooled();
         obj.SetActive(true);
         poolDictionary[poolId].Enqueue(obj);
         return obj;

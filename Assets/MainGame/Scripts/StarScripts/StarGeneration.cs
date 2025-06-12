@@ -60,7 +60,6 @@ public class StarGeneration : MonoBehaviour {
         for (int i = 0; i < canvas.spawnCount; i++) {
             Vector3 pos = new Vector3(UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange), UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange), UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange));
             PoolManager.Instance.TrySpawnFromPool<StarController>("star", out StarController tempStar);
-            tempStar.OnStarSpawn();
             _starList.Add(tempStar);
         }
         StartCoroutine(StarPathsCalc());
