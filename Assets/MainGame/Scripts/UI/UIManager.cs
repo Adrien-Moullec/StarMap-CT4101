@@ -8,7 +8,7 @@ public class UIManager : MonoBehaviour {
     public static UIManager Instance;
 
     #region Play UI
-    [Header("Main Star Focus")]
+    [Header("Star Info")]
     [SerializeField] public TextMeshProUGUI _startStarTextUI;
     [SerializeField] public TextMeshProUGUI _endStarTextUI;
     [SerializeField] public TextMeshProUGUI _starPathTextUI;
@@ -29,6 +29,8 @@ public class UIManager : MonoBehaviour {
     public int leapDistance { get { return (int)sliderLeapDistance.value; } }
     public int minStarSize { get { return (int)sliderMinStarSize.value; } }
     public int maxStarSize { get { return (int)sliderMaxStarSize.value; } }
+    public int evilRegionRange { get { return (toggleEvilRegion.isOn ? (int)sliderEvilRegionRange.value : 0); } }
+    public int evilRegionMult { get { return (int)sliderEvilRegionMult.value; } }
 
     [Space]
     [Header("Sliders")]
@@ -37,6 +39,9 @@ public class UIManager : MonoBehaviour {
     [SerializeField] public Slider sliderLeapDistance;
     [SerializeField] public Slider sliderMinStarSize;
     [SerializeField] public Slider sliderMaxStarSize;
+    [SerializeField] public Slider sliderEvilRegionRange;
+    [SerializeField] public Slider sliderEvilRegionMult;
+    [SerializeField] public Toggle toggleEvilRegion;
 
     [Space]
     [Header("Text References")]
@@ -45,9 +50,19 @@ public class UIManager : MonoBehaviour {
     [SerializeField] TextMeshProUGUI textLeapDistance;
     [SerializeField] TextMeshProUGUI textMinStarSize;
     [SerializeField] TextMeshProUGUI textMaxStarSize;
+    [SerializeField] TextMeshProUGUI textEvilRegionRange;
+    [SerializeField] TextMeshProUGUI textEvilRegionMult;
+
+    [Space]
+    [Header("Dropdown options")]
+    [SerializeField] public TMP_Dropdown pathfindingOptions;
+    [SerializeField] public Toggle quickFindToggle;
+    [SerializeField] public TMP_Dropdown optimizationOptions;
     #endregion
-    
+
     //Text & Image
+    [Space]
+    [Header("Loading star")]
     [SerializeField] TextMeshProUGUI loadingStarText;
     [SerializeField] RawImage loadingStarImage;
 
@@ -67,18 +82,23 @@ public class UIManager : MonoBehaviour {
         sliderLeapDistance.value = 40;
         sliderMinStarSize.value = 10;
         sliderMaxStarSize.value = 50;
+        sliderEvilRegionRange.value = 50;
+        sliderEvilRegionMult.value = 5;
 
         textSpawnRange.text = spawnRange.ToString();
         textSpawnCount.text = spawnCount.ToString();
         textLeapDistance.text = leapDistance.ToString();
         textMinStarSize.text = minStarSize.ToString();
         textMaxStarSize.text = maxStarSize.ToString();
+        textEvilRegionMult.text = evilRegionMult.ToString();
 
         sliderSpawnRange.onValueChanged.AddListener(delegate { textSpawnRange.text = spawnRange.ToString(); });
         sliderSpawnCount.onValueChanged.AddListener(delegate { textSpawnCount.text = spawnCount.ToString(); });
         sliderLeapDistance.onValueChanged.AddListener(delegate { textLeapDistance.text = leapDistance.ToString(); });
         sliderMinStarSize.onValueChanged.AddListener(delegate { textMinStarSize.text = minStarSize.ToString(); });
         sliderMaxStarSize.onValueChanged.AddListener(delegate { textMaxStarSize.text = maxStarSize.ToString(); });
+        sliderEvilRegionRange.onValueChanged.AddListener(delegate { textEvilRegionRange.text = evilRegionRange.ToString(); });
+        sliderEvilRegionMult.onValueChanged.AddListener(delegate { textEvilRegionMult.text = evilRegionMult.ToString(); });
         #endregion
 
         #region Setting Play UI
@@ -120,9 +140,20 @@ public class UIManager : MonoBehaviour {
         }
 
         _starPathTextUI.color = Color.white;
-        _starPathTextUI.text = StarGeneration.instance.finalStarPath[StarGeneration.instance.finalStarPath.Count - 1].name;
-        for (int i = StarGeneration.instance.finalStarPath.Count - 2; i >= 0; i--) {
-            _starPathTextUI.text = _starPathTextUI.text + "\n" + StarGeneration.instance.finalStarPath[i].name;
+        if (StarGeneration.instance.finalStarPath.Count > 1) {
+            _starPathTextUI.text = StarGeneration.instance.finalStarPath[StarGeneration.instance.finalStarPath.Count - 1].name;
+            for (int i = StarGeneration.instance.finalStarPath.Count - 2; i >= 0; i--) {
+                _starPathTextUI.text = _starPathTextUI.text + "\n" + StarGeneration.instance.finalStarPath[i].name;
+            }
+        } else {
+            _starPathTextUI.text = "Failed to find path";
+            _starPathTextUI.color = Color.red;
+            return;
         }
+    }
+
+    public void ResetStars() {
+        _starPathTextUI.text = "";
+        _starPathTextUI.color = Color.black;
     }
 }

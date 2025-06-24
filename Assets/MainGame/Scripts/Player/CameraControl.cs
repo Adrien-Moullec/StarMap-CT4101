@@ -2,6 +2,7 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using StarMaps;
 
 public class CameraControl : MonoBehaviour
 {
@@ -93,7 +94,6 @@ public class CameraControl : MonoBehaviour
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit)) {
-                print(hit.transform.name);
                 hit.transform.GetComponent<IInteract>().Interact();
             }
         }

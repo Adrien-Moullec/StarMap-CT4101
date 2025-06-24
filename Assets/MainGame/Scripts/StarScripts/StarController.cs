@@ -1,14 +1,20 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using StarMaps;
 
 public class StarController : MonoBehaviour, IInteract, IPool {
 
     UIManager _uiManager;
-    string starName;
+    public string starName {
+        get { return transform.name; }
+        set { transform.name = value; starNameDisplay.text = value; }
+    }
+        
     public float gravitationCost;
 
     [SerializeField] ParticleSystem particles;
+    [SerializeField] ParticleSystem.MainModule particlesMain;
     [SerializeField] Canvas starUi;
     [SerializeField] TextMeshProUGUI starNameDisplay;
     [SerializeField] Transform planetsParent;
@@ -23,6 +29,7 @@ public class StarController : MonoBehaviour, IInteract, IPool {
         cam = Camera.main;
         currentMat = GetComponent<MeshRenderer>();
         pb = new MaterialPropertyBlock();
+        particlesMain = particles.main;
     }
 
     void Update() {
@@ -31,9 +38,11 @@ public class StarController : MonoBehaviour, IInteract, IPool {
 
     public void OnPooled() {
         _uiManager = UIManager.Instance;
+        ChangeParticleColor(Color.white);
 
         float randomScaleValue = Random.Range(_uiManager.minStarSize, _uiManager.maxStarSize) / 20f;
         transform.localScale = new Vector3(randomScaleValue, randomScaleValue, randomScaleValue);
+        particles.transform.localScale = new Vector3(randomScaleValue, randomScaleValue, randomScaleValue) * 0.65f;
         
         gravitationCost = randomScaleValue * 30;
 
@@ -42,8 +51,6 @@ public class StarController : MonoBehaviour, IInteract, IPool {
         currentMat.SetPropertyBlock(pb);
 
         starUi.transform.forward = transform.position - Camera.main.transform.position;
-        starName = StarPetNames.names[Random.Range(0, StarPetNames.names.Length)] + "-" + Random.Range(0, 1000);
-        starNameDisplay.text = starName;
 
         transform.name = starName;
         transform.position = RandomVec3(UIManager.Instance.spawnRange);
@@ -62,6 +69,8 @@ public class StarController : MonoBehaviour, IInteract, IPool {
         #endregion
     }
 
+    public void ChangeParticleColor(Color color) => particlesMain.startColor = color;
+
     Vector3 RandomVec3(float range) {
         return new Vector3(Random.Range(-range, range), Random.Range(-range, range), Random.Range(-range, range));
     }
@@ -69,6 +78,6 @@ public class StarController : MonoBehaviour, IInteract, IPool {
     public void ChangeColour(Color colour) { backDrop.color = colour; }
 
     public void Interact() {
-
+        StartCoroutine(PathFinder.instance.SelectDestination(this));
     }
 }
