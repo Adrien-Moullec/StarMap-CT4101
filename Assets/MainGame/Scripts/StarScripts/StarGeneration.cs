@@ -1,13 +1,7 @@
 //Creates star system and resets _starlist values
 
-using MeshGenerating;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using TMPro;
 using UnityEngine;
 
 public class StarGeneration : MonoBehaviour {
@@ -16,6 +10,8 @@ public class StarGeneration : MonoBehaviour {
     public static List<StarController> _starList = new List<StarController>();
     public static Dictionary<Vector2Int, PathList> possibleStarPaths = new Dictionary<Vector2Int, PathList>();
     UIManager canvas;
+
+    CoroutineManager cm;
 
     [Space]
     [Header("Object/Prefabs")]
@@ -26,20 +22,19 @@ public class StarGeneration : MonoBehaviour {
     [SerializeField] public GameObject PlanetCentre;
     [SerializeField] public List<GameObject> planetList;
 
-    //Colour section
-    float tempCost;
-
     [HideInInspector] public bool hasGeneratedPaths;
 
     //Star ints to travel to and from
-    public int startStarInt;
-    public int starDestinationInt;
+    public int startStarInt = -1;
+    public int starDestinationInt = -1;
+    PathList t;
     public List<int> starIntChecker = new List<int>();
 
     //Information relative to the first selected star
     public float[] cost;      //Cost to get to star from selected first star
-    public int[] leadingStar; //Previous cheapest cost star to get back to the starting star
+    public int[] leadingStar; //Previous cheapest baseCost star to get back to the starting star
     public List<StarController> finalStarPath = new List<StarController>();
+
     public List<Vector3> positionStarPath {
         get {
             List<Vector3> res = new List<Vector3>();
@@ -55,16 +50,19 @@ public class StarGeneration : MonoBehaviour {
     }
     private void Start() {
         canvas = UIManager.Instance;
-        EvilRegionCenter = new Vector3(UnityEngine.Random.Range(-canvas.evilRegionRange, canvas.evilRegionRange), UnityEngine.Random.Range(-canvas.evilRegionRange, canvas.evilRegionRange), UnityEngine.Random.Range(-canvas.evilRegionRange, canvas.evilRegionRange));
+        EvilRegionCenter = new Vector3(Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value), Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value), Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value));
+        cm = CoroutineManager.Instance;
     }
 
     public static float GetPathCost(List<int> path) {
         float finalCost = 0;
-        if (!(path.Count > 1))
+        if (!(path.Count > 1)) 
             return Mathf.Infinity;
+        
         for (int i = 0; i < path.Count - 1; i++) {
-            finalCost += StarGeneration.possibleStarPaths[new Vector2Int(path[i], path[i+1])].cost;
+            finalCost += possibleStarPaths[new Vector2Int(path[i], path[i+1])].cost;
         }
+
         return finalCost;
     }
 
@@ -72,22 +70,24 @@ public class StarGeneration : MonoBehaviour {
 
         _starList.Clear();
 
-        for (int i = 0; i < canvas.spawnCount; i++) {
-            Vector3 pos = new Vector3(UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange), UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange), UnityEngine.Random.Range(-canvas.spawnRange, canvas.spawnRange));
+        for (int i = 0; i < canvas.spawnCount.Value; i++) {
+            Vector3 pos = new Vector3(Random.Range(-canvas.spawnRange.Value, canvas.spawnRange.Value), Random.Range(-canvas.spawnRange.Value, canvas.spawnRange.Value), Random.Range(-canvas.spawnRange.Value, canvas.spawnRange.Value));
             PoolManager.Instance.TrySpawnFromPool<StarController>("star", out StarController tempStar);
-            tempStar.starName = StarPetNames.names[UnityEngine.Random.Range(0, StarPetNames.names.Length)] +"-"+ i.ToString();
+            tempStar.starName = StarPetNames.names[Random.Range(0, StarPetNames.names.Length)] +"-"+ i.ToString();
             _starList.Add(tempStar);
         }
+        PathFinder.instance.OnStarsGenerate();
         StartCoroutine(StarPathsCalc());
     }
 
     //Find the path costs & Finding the closest star to the center :3
     public IEnumerator StarPathsCalc() {
-        int tempStarInt = 0;
-        bool isEvilPath;
-        possibleStarPaths.Clear();
 
-        PathList t;
+        StartCoroutine(cm.RunCoroutine(UIManager.Instance.LoadingStarFlash("Calculating")));
+
+        int tempStarInt = 0;
+        float tempCost;
+        possibleStarPaths.Clear();
 
         for (int startStar = 0; startStar < _starList.Count; startStar++) {
             if (Vector3.Distance(_starList[startStar].transform.position, Vector3.zero) < Vector3.Distance(_starList[tempStarInt].transform.position, Vector3.zero)) {
@@ -96,41 +96,53 @@ public class StarGeneration : MonoBehaviour {
             //Find all path lengths and add all working paths to list
             for (int endStar = 0; endStar < _starList.Count; endStar++) {
                 tempCost = Vector3.Distance(_starList[startStar].transform.position, _starList[endStar].transform.position) + (_starList[startStar].gravitationCost + _starList[startStar].gravitationCost)/2;
-                if (tempCost <= (canvas.leapDistance) && startStar!=endStar) {
-                    isEvilPath = Vector3.Distance(EvilRegionCenter, _starList[startStar].transform.position) < canvas.evilRegionRange || Vector3.Distance(EvilRegionCenter, _starList[startStar].transform.position) < canvas.evilRegionRange;
-                    if (!possibleStarPaths.ContainsKey(new Vector2Int(startStar, endStar))) {
-                        t = new();
-                        t.startPoint = _starList[startStar].transform.position;
-                        t.endPoint = _starList[endStar].transform.position;
-                        t.cost = tempCost * (isEvilPath ? 1 : canvas.evilRegionMult);
-                        t.isNotEvil = !isEvilPath;
-                        possibleStarPaths.Add(new Vector2Int(startStar, endStar), t);
-                    }
-                    if (!possibleStarPaths.ContainsKey(new Vector2Int(endStar, startStar))) {
-                        t = new();
-                        t.endPoint = _starList[startStar].transform.position;
-                        t.startPoint = _starList[endStar].transform.position;
-                        t.cost = tempCost * (isEvilPath ? 1 : canvas.evilRegionMult);
-                        t.isNotEvil = !isEvilPath;
-                        possibleStarPaths.Add(new Vector2Int(endStar, startStar), t);
-                    }
-                    if (isEvilPath) {
-                        _starList[startStar].ChangeParticleColor(Color.red);
-                        _starList[endStar].ChangeParticleColor(Color.red);
-                    }
+
+                if (tempCost <= (canvas.leapDistance.Value) && startStar!=endStar) {
+                    CheckStarPath(startStar,endStar,tempCost);
+                    CheckStarPath(endStar,startStar,tempCost);
                 }
             }
             yield return null;
         }
+
         hasGeneratedPaths = true;
+
+        cm.ActivateFinish();
         PathManager.instance.DisplayAllPaths();
     }
 
+    void CheckStarPath(int start, int end, float costCheck) {
+        if (possibleStarPaths.ContainsKey(new Vector2Int(start, end))) {
+            if (possibleStarPaths[new Vector2Int(start, end)].baseCost < costCheck)
+                SetStarPath(start, end, costCheck);
+        } else { SetStarPath(start, end, costCheck); }
+    }
+
+    void SetStarPath(int start, int end, float cost) {
+        t = new();
+        t.startPoint = _starList[start].transform.position;
+        t.endPoint = _starList[end].transform.position;
+        t.baseCost = cost;
+        t.goodPath = !IsEvilStar(start) && !IsEvilStar(end);
+
+        if (possibleStarPaths.ContainsKey(new Vector2Int(start, end))) 
+            possibleStarPaths[new Vector2Int(start, end)] = t;
+        else
+            possibleStarPaths.Add(new Vector2Int(start, end), t);
+    }
+
+    bool IsEvilStar(int checkStar) {
+        if (Vector3.Distance(EvilRegionCenter, _starList[checkStar].transform.position) < canvas.evilRegionRange.Value) {
+            _starList[checkStar].ChangeParticleColor(Color.red);
+            return true;
+        }
+        return false;
+    }
 
     //Resets everything to generate new stars
     public void ResetInitiation() {
+        UIManager.Instance.starSelectAudio.Play();
         PoolManager.Instance.DespawnByTag("star");
-
         PathManager.instance.ClearPaths();
         UIManager.Instance.ResetStars();
         PathManager.instance.ClearPaths();
@@ -138,15 +150,9 @@ public class StarGeneration : MonoBehaviour {
         finalStarPath.Clear();
         possibleStarPaths.Clear();
         _starList.Clear();
-
         hasGeneratedPaths = false;
 
         GenerateStarList();
-    }
-
-    //Quit
-    public void ExitGame() {
-        Application.Quit();
     }
 }
 
@@ -161,7 +167,11 @@ public class StarPetNames {
 public struct PathList {
     public Vector3 startPoint;
     public Vector3 endPoint;
-    public bool isNotEvil;
-    public float cost;
+    public bool goodPath;
+    public float baseCost;
+    public float cost { 
+        get { return (baseCost < UIManager.Instance.leapDistance.Value ? baseCost * (goodPath ? 1 : UIManager.Instance.evilRegionMult.Value) : Mathf.Infinity); } 
+        set { baseCost = value; }
+    }
 }
 

@@ -424,6 +424,7 @@ GameObject:
   m_Component:
   - component: {fileID: 68220512}
   - component: {fileID: 68220513}
+  - component: {fileID: 68220514}
   m_Layer: 5
   m_Name: EvilRegionMultiplier
   m_TagString: Untagged
@@ -506,6 +507,23 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &68220514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 68220511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 10
+  DefaultToggle: 1
+  slider: {fileID: 68220513}
+  textDisplay: {fileID: 1972338055}
+  toggle: {fileID: 81220379}
 --- !u!1 &71889024
 GameObject:
   m_ObjectHideFlags: 0
@@ -665,7 +683,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 0
+  m_IsOn: 1
 --- !u!1 &95758412
 GameObject:
   m_ObjectHideFlags: 0
@@ -2176,6 +2194,7 @@ GameObject:
   m_Component:
   - component: {fileID: 456160528}
   - component: {fileID: 456160529}
+  - component: {fileID: 456160530}
   m_Layer: 5
   m_Name: MaxLeapDistance
   m_TagString: Untagged
@@ -2258,6 +2277,23 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &456160530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 456160527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 42
+  DefaultToggle: 1
+  slider: {fileID: 456160529}
+  textDisplay: {fileID: 1739736858}
+  toggle: {fileID: 0}
 --- !u!1001 &494222997
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3170,6 +3206,7 @@ GameObject:
   m_Component:
   - component: {fileID: 607399307}
   - component: {fileID: 607399308}
+  - component: {fileID: 607399309}
   m_Layer: 5
   m_Name: StarSizeMin
   m_TagString: Untagged
@@ -3248,10 +3285,27 @@ MonoBehaviour:
   m_MinValue: 1
   m_MaxValue: 100
   m_WholeNumbers: 1
-  m_Value: 3
+  m_Value: 10
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &607399309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 607399306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 10
+  DefaultToggle: 1
+  slider: {fileID: 607399308}
+  textDisplay: {fileID: 1705768823}
+  toggle: {fileID: 0}
 --- !u!1 &610170058
 GameObject:
   m_ObjectHideFlags: 0
@@ -3450,27 +3504,21 @@ MonoBehaviour:
   _starPathTextUI: {fileID: 1813384933}
   starSelectAudio: {fileID: 963851158}
   starDeselectAudio: {fileID: 1530548889}
-  sliderSpawnRange: {fileID: 1379644443}
-  sliderSpawnCount: {fileID: 1205064330}
-  sliderLeapDistance: {fileID: 456160529}
-  sliderMinStarSize: {fileID: 607399308}
-  sliderMaxStarSize: {fileID: 1954971122}
-  sliderEvilRegionRange: {fileID: 771810742}
-  sliderEvilRegionMult: {fileID: 68220513}
-  toggleEvilRegion: {fileID: 81220379}
-  textSpawnRange: {fileID: 2104021248}
-  textSpawnCount: {fileID: 977687485}
-  textLeapDistance: {fileID: 1739736858}
-  textMinStarSize: {fileID: 1705768823}
-  textMaxStarSize: {fileID: 577975637}
-  textEvilRegionRange: {fileID: 1901380786}
-  textEvilRegionMult: {fileID: 1972338055}
+  spawnRange: {fileID: 1379644444}
+  spawnCount: {fileID: 1205064331}
+  leapDistance: {fileID: 456160530}
+  minStarSize: {fileID: 607399309}
+  maxStarSize: {fileID: 1954971123}
+  evilRegionRange: {fileID: 771810743}
+  evilRegionMult: {fileID: 68220514}
   pathfindingOptions: {fileID: 1630988131}
   quickFindToggle: {fileID: 1566579016}
   optimizationOptions: {fileID: 626230482}
+  defaultValuesButton: {fileID: 1422182287}
+  resetStarsButton: {fileID: 524396105}
+  exitButton: {fileID: 1799894127}
   loadingStarText: {fileID: 29230879}
   loadingStarImage: {fileID: 1657091006}
-  continueLoad: 0
 --- !u!1 &626230481
 GameObject:
   m_ObjectHideFlags: 0
@@ -4300,6 +4348,7 @@ GameObject:
   m_Component:
   - component: {fileID: 771810741}
   - component: {fileID: 771810742}
+  - component: {fileID: 771810743}
   m_Layer: 5
   m_Name: EvilRegionRange
   m_TagString: Untagged
@@ -4378,10 +4427,27 @@ MonoBehaviour:
   m_MinValue: 1
   m_MaxValue: 300
   m_WholeNumbers: 1
-  m_Value: 3
+  m_Value: 5
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &771810743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 771810740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 10
+  DefaultToggle: 1
+  slider: {fileID: 771810742}
+  textDisplay: {fileID: 1901380786}
+  toggle: {fileID: 81220379}
 --- !u!1 &785115851
 GameObject:
   m_ObjectHideFlags: 0
@@ -5117,6 +5183,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 589351227}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &897240207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 897240208}
+  - component: {fileID: 897240209}
+  m_Layer: 0
+  m_Name: CoroutineManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &897240208
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 897240207}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 961.07794, y: 598.19183, z: 682.0643}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2135102766}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &897240209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 897240207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f85381d7aa152dd4cbfe47b01d9c57f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isRunning: 0
+  isFinished: 0
 --- !u!1 &901257693
 GameObject:
   m_ObjectHideFlags: 0
@@ -6599,6 +6711,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1205064329}
   - component: {fileID: 1205064330}
+  - component: {fileID: 1205064331}
   m_Layer: 5
   m_Name: StarSpawnCount
   m_TagString: Untagged
@@ -6677,10 +6790,27 @@ MonoBehaviour:
   m_MinValue: 2
   m_MaxValue: 1000
   m_WholeNumbers: 1
-  m_Value: 3
+  m_Value: 10
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1205064331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205064328}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 50
+  DefaultToggle: 1
+  slider: {fileID: 1205064330}
+  textDisplay: {fileID: 977687485}
+  toggle: {fileID: 0}
 --- !u!1 &1208557753
 GameObject:
   m_ObjectHideFlags: 0
@@ -7671,6 +7801,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1379644442}
   - component: {fileID: 1379644443}
+  - component: {fileID: 1379644444}
   m_Layer: 5
   m_Name: SpawnRangeSlider
   m_TagString: Untagged
@@ -7753,6 +7884,23 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1379644444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1379644441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 50
+  DefaultToggle: 1
+  slider: {fileID: 1379644443}
+  textDisplay: {fileID: 2104021248}
+  toggle: {fileID: 0}
 --- !u!1 &1393086441
 GameObject:
   m_ObjectHideFlags: 0
@@ -12013,6 +12161,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1954971121}
   - component: {fileID: 1954971122}
+  - component: {fileID: 1954971123}
   m_Layer: 5
   m_Name: StarSizeMax
   m_TagString: Untagged
@@ -12091,10 +12240,27 @@ MonoBehaviour:
   m_MinValue: 1
   m_MaxValue: 100
   m_WholeNumbers: 1
-  m_Value: 3
+  m_Value: 10
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1954971123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954971120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a17192bfc6da5429186d5617c8e5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultValue: 10
+  DefaultToggle: 1
+  slider: {fileID: 1954971122}
+  textDisplay: {fileID: 577975637}
+  toggle: {fileID: 0}
 --- !u!1 &1966297970
 GameObject:
   m_ObjectHideFlags: 0
@@ -13269,6 +13435,7 @@ Transform:
   - {fileID: 383500813}
   - {fileID: 5785163}
   - {fileID: 1675056175}
+  - {fileID: 897240208}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2135137490

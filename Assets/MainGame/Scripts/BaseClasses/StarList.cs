@@ -10,8 +10,8 @@ public class StarList {
     //Individual & duo star information
     public GameObject[] star; //Star Object itself
 
-    //Information related to the cost of each path and the ship
-     //2 stars form key for path cost
+    //Information related to the baseCost of each path and the ship
+     //2 stars form key for path baseCost
     public float[] gravitationCost;
 
 }

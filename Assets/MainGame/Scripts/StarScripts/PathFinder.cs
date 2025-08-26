@@ -1,12 +1,8 @@
 //Using _starlist, check the start & destination then try find a path
 
-using BezierSolution;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PathFinder : MonoBehaviour {
@@ -14,7 +10,8 @@ public class PathFinder : MonoBehaviour {
     [Header("StarList")]
     public static PathFinder instance;
     UIManager _uiManager;
-    PathManager _pathManager;    
+    PathManager _pathManager;
+    CoroutineManager cm;
 
     [Space]
     [Header("Script References")]
@@ -28,9 +25,11 @@ public class PathFinder : MonoBehaviour {
     private void Start() {
         starGen = StarGeneration.instance;
         _uiManager = UIManager.Instance;
+        cm = CoroutineManager.Instance;
+    }
 
-        starGen.startStarInt = -1;
-        starGen.starDestinationInt = -1;
+    public void OnStarsGenerate() {
+        SetupPathStart(null, Color.black, Color.black, -1, -1, UIManager.empty, UIManager.empty);
     }
 
     IEnumerator RouteCalculater() {
@@ -44,9 +43,10 @@ public class PathFinder : MonoBehaviour {
         starGen.leadingStar = new int[StarGeneration._starList.Count];
         starGen.cost[starGen.startStarInt] = 0;
 
-        //Find the cost paths from LEFT to TOP
-        StartCoroutine(UIManager.Instance.LoadingStarFlash("Calculating"));
+        //Find the baseCost paths from LEFT to TOP
+        StartCoroutine(cm.RunCoroutine(UIManager.Instance.LoadingStarFlash("Calculating")));
         yield return PathFindOptions();
+        cm.ActivateFinish();
 
         if (StarGeneration._starList.Count > 1 && StarGeneration.instance.finalStarPath.Count > 1) {
             UIManager.Instance.UpdatePathList(true);
@@ -55,13 +55,8 @@ public class PathFinder : MonoBehaviour {
         } else {
             UIManager.Instance.UpdatePathList(false);
         }
-
-        UIManager.Instance.continueLoad = false;
         //Sets everything for next run
-        StarGeneration._starList[starGen.startStarInt].ChangeColour(Color.black);
-        StarGeneration._starList[starGen.starDestinationInt].ChangeColour(Color.black);
-        starGen.startStarInt = -1;
-        starGen.starDestinationInt = -1;
+        SetupPathStart(null, Color.black, Color.black, -1, -1, UIManager.empty, UIManager.empty);
         isSearchingForPath = false;
     }
 
@@ -72,52 +67,56 @@ public class PathFinder : MonoBehaviour {
         int counter;
 
         if (StarGeneration.instance.hasGeneratedPaths && !isSearchingForPath) {
+            counter = 0;
             //Selects first star of pathfinder
             if (starGen.startStarInt == -1) {
-                counter = 0;
+
                 foreach (StarController star in StarGeneration._starList) {
                     if (star == selectedStar) {
-                        _uiManager.starSelectAudio.Play();
-                        starGen.startStarInt = counter;
-                        StarGeneration._starList[starGen.startStarInt].ChangeColour(Color.green);
-
-                        _uiManager._startStarTextUI.text = star.name;
-                        _uiManager._endStarTextUI.text = "---";
+                        SetupPathStart(_uiManager.starSelectAudio, Color.green, Color.black, counter, -1, star.name, UIManager.empty);
                         break;
                     }
                     counter++;
                 }
             }
             //Selects 2nd star to travel to
-            else if (StarGeneration.instance.startStarInt != -1) {
-                counter = 0;
-                foreach (StarController star in StarGeneration._starList) {
+            else {
 
+                foreach (StarController star in StarGeneration._starList) {
                     //Selects 2nd star if successful
                     if (star == selectedStar && counter != starGen.startStarInt) {
-                        _uiManager.starSelectAudio.Play();
-                        starGen.starDestinationInt = counter;
-                        _uiManager._endStarTextUI.text = star.name;
-                        StarGeneration._starList[starGen.starDestinationInt].ChangeColour(Color.green);
+                        SetupPathStart(_uiManager.starSelectAudio, Color.green, Color.green, starGen.startStarInt, counter, null, star.name);
                         yield return RouteCalculater();
-
                         break;
                     }
 
                     //If the same star is selected, deselect 1st star
                     else if (star == selectedStar && counter == starGen.startStarInt) {
-                        _uiManager.starDeselectAudio.Play();
-                        StarGeneration._starList[starGen.startStarInt].ChangeColour(Color.black);
-                        starGen.startStarInt = -1;
-                        starGen.starDestinationInt = -1;
-                        _uiManager._startStarTextUI.text = "---";
-                        _uiManager._endStarTextUI.text = "---";
+                        SetupPathStart(_uiManager.starDeselectAudio, Color.black, Color.black, -1, -1, UIManager.empty, UIManager.empty);
+                        break;
                     }
                     counter++;
                 }
             }
 
         }
+    }
+
+    void SetupPathStart(AudioSource aud, Color colStart, Color colEnd, int start, int end, string startText, string endText) {
+
+        if (aud != null) aud.Play();
+
+        if (starGen.startStarInt != -1) StarGeneration._starList[starGen.startStarInt].ChangeColour(Color.black);
+        if (starGen.starDestinationInt != -1) StarGeneration._starList[starGen.starDestinationInt].ChangeColour(Color.black);
+
+        if (start != -1) StarGeneration._starList[start].ChangeColour(colStart);
+        if (end != -1) StarGeneration._starList[end].ChangeColour(colEnd);
+
+        starGen.startStarInt = start;
+        starGen.starDestinationInt = end;
+
+        if (startText != null) _uiManager._startStarTextUI.text = startText;
+        if (endText != null) _uiManager._endStarTextUI.text = endText;
     }
 
     public void EndPathfinding() {
@@ -236,10 +235,10 @@ public class PathFinder : MonoBehaviour {
         for (int x = 0; x < res.Count; x++) {
             for (int j = res.Count - 1; j > x+1; j--) {
                 if (StarGeneration.possibleStarPaths.ContainsKey(new Vector2Int(res[x], res[j]))
-                    && StarGeneration.GetPathCost(res.GetRange(x, (j - x - 1))) < StarGeneration.GetPathCost(new List<int>{ res[x], res[j]})) {
+                    && StarGeneration.GetPathCost(res.GetRange(x, (j - x + 1))) > StarGeneration.GetPathCost(new List<int>{ res[x], res[j]})) {
                     res.RemoveRange(x + 1, j-x-1);
                     return SkipPathWaypoints(res);
-                }
+                } 
             }
         }
         return res;

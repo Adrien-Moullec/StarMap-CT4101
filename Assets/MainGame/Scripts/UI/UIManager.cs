@@ -1,11 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class UIManager : MonoBehaviour {
 
     public static UIManager Instance;
+    public static List<StarSliderValues> allSliders = new List<StarSliderValues>();
 
     #region Play UI
     [Header("Star Info")]
@@ -13,7 +14,7 @@ public class UIManager : MonoBehaviour {
     [SerializeField] public TextMeshProUGUI _endStarTextUI;
     [SerializeField] public TextMeshProUGUI _starPathTextUI;
 
-    const string empty = "---";
+    public const string empty = "---";
     #endregion
 
     #region Audio
@@ -23,42 +24,29 @@ public class UIManager : MonoBehaviour {
     [SerializeField] public AudioSource starDeselectAudio;
     #endregion
 
-    #region Sliders and Values
-    public int spawnRange { get { return (int)sliderSpawnRange.value; } }
-    public int spawnCount { get { return (int)sliderSpawnCount.value; } }
-    public int leapDistance { get { return (int)sliderLeapDistance.value; } }
-    public int minStarSize { get { return (int)sliderMinStarSize.value; } }
-    public int maxStarSize { get { return (int)sliderMaxStarSize.value; } }
-    public int evilRegionRange { get { return (toggleEvilRegion.isOn ? (int)sliderEvilRegionRange.value : 0); } }
-    public int evilRegionMult { get { return (int)sliderEvilRegionMult.value; } }
-
     [Space]
-    [Header("Sliders")]
-    [SerializeField] public Slider sliderSpawnRange;
-    [SerializeField] public Slider sliderSpawnCount;
-    [SerializeField] public Slider sliderLeapDistance;
-    [SerializeField] public Slider sliderMinStarSize;
-    [SerializeField] public Slider sliderMaxStarSize;
-    [SerializeField] public Slider sliderEvilRegionRange;
-    [SerializeField] public Slider sliderEvilRegionMult;
-    [SerializeField] public Toggle toggleEvilRegion;
-
+    [Header("Slider Values")]
     [Space]
-    [Header("Text References")]
-    [SerializeField] TextMeshProUGUI textSpawnRange;
-    [SerializeField] TextMeshProUGUI textSpawnCount;
-    [SerializeField] TextMeshProUGUI textLeapDistance;
-    [SerializeField] TextMeshProUGUI textMinStarSize;
-    [SerializeField] TextMeshProUGUI textMaxStarSize;
-    [SerializeField] TextMeshProUGUI textEvilRegionRange;
-    [SerializeField] TextMeshProUGUI textEvilRegionMult;
+    
+    [SerializeField] public StarSliderValues spawnRange;
+    [SerializeField] public StarSliderValues spawnCount;
+    [SerializeField] public StarSliderValues leapDistance;
+    [SerializeField] public StarSliderValues minStarSize;
+    [SerializeField] public StarSliderValues maxStarSize;
+    [SerializeField] public StarSliderValues evilRegionRange;
+    [SerializeField] public StarSliderValues evilRegionMult;
 
     [Space]
     [Header("Dropdown options")]
     [SerializeField] public TMP_Dropdown pathfindingOptions;
     [SerializeField] public Toggle quickFindToggle;
     [SerializeField] public TMP_Dropdown optimizationOptions;
-    #endregion
+
+    [Space]
+    [Header("Buttons")]
+    [SerializeField] Button defaultValuesButton;
+    [SerializeField] Button resetStarsButton;
+    [SerializeField] Button exitButton;
 
     //Text & Image
     [Space]
@@ -66,67 +54,60 @@ public class UIManager : MonoBehaviour {
     [SerializeField] TextMeshProUGUI loadingStarText;
     [SerializeField] RawImage loadingStarImage;
 
-    //Bools
-    [HideInInspector] public bool continueLoad;
-
     //Colors
     Color imageColor;
-    Color textColor;    
+    Color textColor;
 
     private void Awake() {
         Instance = this;
 
         #region Setting slider values
-        sliderSpawnRange.value = 60;
-        sliderSpawnCount.value = 50;
-        sliderLeapDistance.value = 40;
-        sliderMinStarSize.value = 10;
-        sliderMaxStarSize.value = 50;
-        sliderEvilRegionRange.value = 50;
-        sliderEvilRegionMult.value = 5;
-
-        textSpawnRange.text = spawnRange.ToString();
-        textSpawnCount.text = spawnCount.ToString();
-        textLeapDistance.text = leapDistance.ToString();
-        textMinStarSize.text = minStarSize.ToString();
-        textMaxStarSize.text = maxStarSize.ToString();
-        textEvilRegionMult.text = evilRegionMult.ToString();
-
-        sliderSpawnRange.onValueChanged.AddListener(delegate { textSpawnRange.text = spawnRange.ToString(); });
-        sliderSpawnCount.onValueChanged.AddListener(delegate { textSpawnCount.text = spawnCount.ToString(); });
-        sliderLeapDistance.onValueChanged.AddListener(delegate { textLeapDistance.text = leapDistance.ToString(); });
-        sliderMinStarSize.onValueChanged.AddListener(delegate { textMinStarSize.text = minStarSize.ToString(); });
-        sliderMaxStarSize.onValueChanged.AddListener(delegate { textMaxStarSize.text = maxStarSize.ToString(); });
-        sliderEvilRegionRange.onValueChanged.AddListener(delegate { textEvilRegionRange.text = evilRegionRange.ToString(); });
-        sliderEvilRegionMult.onValueChanged.AddListener(delegate { textEvilRegionMult.text = evilRegionMult.ToString(); });
+        spawnRange.Awaken();
+        spawnCount.Awaken();
+        leapDistance.Awaken();
+        minStarSize.Awaken();
+        maxStarSize.Awaken();
+        evilRegionRange.Awaken();
+        evilRegionMult.Awaken();
         #endregion
 
         #region Setting Play UI
-        _starPathTextUI.text = empty;
+        _startStarTextUI.text = empty;
         _endStarTextUI.text = empty;
-        _starPathTextUI.text = "";
+        _starPathTextUI.text = empty;
 
         textColor = loadingStarText.color; textColor.a = 0; loadingStarText.color = textColor;
         imageColor = loadingStarImage.color; imageColor.a = 0; loadingStarImage.color = imageColor;
         #endregion
+
+        #region Button Setup
+        defaultValuesButton.onClick.AddListener(delegate {
+            Instance.starSelectAudio.Play(); 
+            foreach (StarSliderValues s in allSliders) s.ResetSliderValues(); 
+        });
+        resetStarsButton.onClick.AddListener(() => StarGeneration.instance.ResetInitiation());
+        exitButton.onClick.AddListener(() => Application.Quit());
+        #endregion
     }
-    
+
     //Make the loading star flash by changing alpha value
     public IEnumerator LoadingStarFlash(string message) {
         float alphaValue;
         float time = 0;
-
-        continueLoad = true;
         loadingStarText.text = message;
 
-        while (continueLoad) {
+        while (!CoroutineManager.Instance.isFinished) {
             time += Time.deltaTime * 5; time = time > 4 ? 0 : time;
             alphaValue = Mathf.Abs(Mathf.Sin(time));
-            imageColor.a = alphaValue; textColor.a = alphaValue;
-            loadingStarImage.color = imageColor; loadingStarText.color = textColor;
+            SetLoadStarOpacity(alphaValue);
 
             yield return null;
         }
+        print("Finished");
+        SetLoadStarOpacity(0);
+    }
+
+    void SetLoadStarOpacity(float alpha) {
         imageColor.a = 0; textColor.a = 0;
         loadingStarImage.color = imageColor; loadingStarText.color = textColor;
     }

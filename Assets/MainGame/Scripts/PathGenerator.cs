@@ -24,11 +24,11 @@ public class PathGenerator : MonoBehaviour, IPath
                 break;
             case PathType.GoodPaths:
                 mf.mesh = MeshGeneration.PathGen.GeneratePossiblePaths(StarGeneration.possibleStarPaths.
-                Where(x => x.Value.isNotEvil).Select(x => x.Value).ToList());
+                Where(x => x.Value.goodPath).Select(x => x.Value).ToList());
                 break;
             case PathType.BadPaths:
                 mf.mesh = MeshGeneration.PathGen.GeneratePossiblePaths(StarGeneration.possibleStarPaths.
-                Where(x => !x.Value.isNotEvil).Select(x => x.Value).ToList());
+                Where(x => !x.Value.goodPath).Select(x => x.Value).ToList());
                 break;
             case PathType.Best:
                 mf.mesh = MeshGeneration.PathGen.GenerateSinglePath(StarGeneration.instance.positionStarPath);

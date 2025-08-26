@@ -17,7 +17,6 @@ public class StarController : MonoBehaviour, IInteract, IPool {
     [SerializeField] ParticleSystem.MainModule particlesMain;
     [SerializeField] Canvas starUi;
     [SerializeField] TextMeshProUGUI starNameDisplay;
-    [SerializeField] Transform planetsParent;
     [SerializeField] public Image backDrop;
     [SerializeField] Material sourceMat;
 
@@ -40,7 +39,7 @@ public class StarController : MonoBehaviour, IInteract, IPool {
         _uiManager = UIManager.Instance;
         ChangeParticleColor(Color.white);
 
-        float randomScaleValue = Random.Range(_uiManager.minStarSize, _uiManager.maxStarSize) / 20f;
+        float randomScaleValue = Random.Range(_uiManager.minStarSize.Value, _uiManager.maxStarSize.Value) / 20f;
         transform.localScale = new Vector3(randomScaleValue, randomScaleValue, randomScaleValue);
         particles.transform.localScale = new Vector3(randomScaleValue, randomScaleValue, randomScaleValue) * 0.65f;
         
@@ -53,20 +52,7 @@ public class StarController : MonoBehaviour, IInteract, IPool {
         starUi.transform.forward = transform.position - Camera.main.transform.position;
 
         transform.name = starName;
-        transform.position = RandomVec3(UIManager.Instance.spawnRange);
-
-        #region Planets
-        for (int j = 0; j < Random.Range(1, 10); j++) {
-            Transform tempCentre = Instantiate(StarGeneration.instance.PlanetCentre).transform;
-            Transform tempPlanet = Instantiate(StarGeneration.instance.planetList[UnityEngine.Random.Range(0, StarGeneration.instance.planetList.Count)]).transform;
-            tempPlanet.localScale = new Vector3(0.04f, 0.04f, 0.04f);
-            tempPlanet.position = new Vector3(Random.Range(2, 10), 0, 0);
-            tempPlanet.SetParent(tempCentre.transform);
-            tempCentre.SetParent(planetsParent);
-            tempCentre.position = transform.position;
-            tempCentre.localEulerAngles = new Vector3(Random.Range(0, 180), Random.Range(0, 180), Random.Range(0, 180));
-        }
-        #endregion
+        transform.position = RandomVec3(UIManager.Instance.spawnRange.Value);
     }
 
     public void ChangeParticleColor(Color color) => particlesMain.startColor = color;
