@@ -53,6 +53,7 @@ public class UIManager : MonoBehaviour {
     [Header("Loading star")]
     [SerializeField] TextMeshProUGUI loadingStarText;
     [SerializeField] RawImage loadingStarImage;
+    [SerializeField] Slider loadingSlider;
 
     //Colors
     Color imageColor;
@@ -60,6 +61,7 @@ public class UIManager : MonoBehaviour {
 
     private void Awake() {
         Instance = this;
+        loadingStarImage.gameObject.SetActive(false);
 
         #region Setting slider values
         spawnRange.Awaken();
@@ -85,7 +87,6 @@ public class UIManager : MonoBehaviour {
             Instance.starSelectAudio.Play(); 
             foreach (StarSliderValues s in allSliders) s.ResetSliderValues(); 
         });
-        resetStarsButton.onClick.AddListener(() => StarGeneration.instance.ResetInitiation());
         exitButton.onClick.AddListener(() => Application.Quit());
         #endregion
     }
@@ -95,21 +96,34 @@ public class UIManager : MonoBehaviour {
         float alphaValue;
         float time = 0;
         loadingStarText.text = message;
+        loadingStarImage.gameObject.SetActive(true);
 
-        while (!CoroutineManager.Instance.isFinished) {
-            time += Time.deltaTime * 5; time = time > 4 ? 0 : time;
+        while (true) {
+            time += Time.deltaTime; time = time > (4*Mathf.PI) ? 0 : time;
             alphaValue = Mathf.Abs(Mathf.Sin(time));
+            print(alphaValue);
             SetLoadStarOpacity(alphaValue);
 
             yield return null;
         }
-        print("Finished");
-        SetLoadStarOpacity(0);
     }
-
-    void SetLoadStarOpacity(float alpha) {
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SET Interface for star load specifically???????????????
+    public void SetLoadStarOpacity(float alpha) {
+        imageColor.a = alpha; textColor.a = alpha;
+        loadingStarImage.color = imageColor; loadingStarText.color = textColor;
+    }
+    public void DisableStar() {
+        loadingStarImage.gameObject.SetActive(false);
         imageColor.a = 0; textColor.a = 0;
         loadingStarImage.color = imageColor; loadingStarText.color = textColor;
+    }
+
+    public void SetLoadStarBar(int num) {
+        loadingSlider.value = num;
+        //if (alpha == 0 || alpha == 1)  
+    }
+    public void SetLoadStarBarMax(int num) {
+        loadingSlider.maxValue = num;
     }
 
     public void UpdatePathList(bool foundPath) {

@@ -11,7 +11,7 @@ public class StarGeneration : MonoBehaviour {
     public static Dictionary<Vector2Int, PathList> possibleStarPaths = new Dictionary<Vector2Int, PathList>();
     UIManager canvas;
 
-    CoroutineManager cm;
+    IEnumerator LoadingStarSymbol;
 
     [Space]
     [Header("Object/Prefabs")]
@@ -50,8 +50,8 @@ public class StarGeneration : MonoBehaviour {
     }
     private void Start() {
         canvas = UIManager.Instance;
+        LoadingStarSymbol = canvas.LoadingStarFlash("Calculating");
         EvilRegionCenter = new Vector3(Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value), Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value), Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value));
-        cm = CoroutineManager.Instance;
     }
 
     public static float GetPathCost(List<int> path) {
@@ -77,19 +77,22 @@ public class StarGeneration : MonoBehaviour {
             _starList.Add(tempStar);
         }
         PathFinder.instance.OnStarsGenerate();
+
         StartCoroutine(StarPathsCalc());
     }
 
     //Find the path costs & Finding the closest star to the center :3
     public IEnumerator StarPathsCalc() {
 
-        StartCoroutine(cm.RunCoroutine(UIManager.Instance.LoadingStarFlash("Calculating")));
 
         int tempStarInt = 0;
         float tempCost;
         possibleStarPaths.Clear();
+        canvas.SetLoadStarBarMax(_starList.Count);
 
         for (int startStar = 0; startStar < _starList.Count; startStar++) {
+            canvas.SetLoadStarBar(startStar);
+
             if (Vector3.Distance(_starList[startStar].transform.position, Vector3.zero) < Vector3.Distance(_starList[tempStarInt].transform.position, Vector3.zero)) {
                 tempStarInt = startStar;
             }
@@ -107,8 +110,10 @@ public class StarGeneration : MonoBehaviour {
 
         hasGeneratedPaths = true;
 
-        cm.ActivateFinish();
         PathManager.instance.DisplayAllPaths();
+
+        StopCoroutine(LoadingStarSymbol);
+        canvas.SetLoadStarOpacity(0);
     }
 
     void CheckStarPath(int start, int end, float costCheck) {
@@ -141,10 +146,9 @@ public class StarGeneration : MonoBehaviour {
 
     //Resets everything to generate new stars
     public void ResetInitiation() {
-        UIManager.Instance.starSelectAudio.Play();
+        canvas.starSelectAudio.Play();
         PoolManager.Instance.DespawnByTag("star");
-        PathManager.instance.ClearPaths();
-        UIManager.Instance.ResetStars();
+        canvas.ResetStars();
         PathManager.instance.ClearPaths();
 
         finalStarPath.Clear();
@@ -152,6 +156,8 @@ public class StarGeneration : MonoBehaviour {
         _starList.Clear();
         hasGeneratedPaths = false;
 
+        StopCoroutine(LoadingStarSymbol);
+        StartCoroutine(LoadingStarSymbol);
         GenerateStarList();
     }
 }

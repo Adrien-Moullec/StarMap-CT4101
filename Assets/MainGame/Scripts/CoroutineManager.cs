@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using System.Collections;
+using System;
 
 [System.Serializable]
 public class CoroutineManager : MonoBehaviour {
@@ -9,35 +10,22 @@ public class CoroutineManager : MonoBehaviour {
 
     IEnumerator currentCoroutine;
 
-    [HideInInspector] public bool isRunning = false;
-    [HideInInspector] public bool isFinished = false;
+    public bool isRunning = false;
+    public bool isFinished = false;
 
     private void Awake() {
         Instance = this;
     }
 
-    public IEnumerator RunCoroutine(IEnumerator coroutine) {
-        print("RunCoroutine");
-        currentCoroutine = coroutine;
-        print(currentCoroutine.ToString());
+    public IEnumerator RunCoroutine(IEnumerator Coroutine) {
+        currentCoroutine = Coroutine;
 
-        isRunning = true;
-        isFinished = false;
+        StartCoroutine(currentCoroutine);
 
-        yield return currentCoroutine;
-        print("End of coroutine in manager");
-        isRunning = false;
-        isFinished = true;
+        yield break;
     }
     
     public void ActivateFinish() {
-        print("ActivateFinish coroutine in manager");
-        if (currentCoroutine != null) isFinished = true;
-        ResetCoroutineManager();
-    }
-
-    void ResetCoroutineManager() {
-        isRunning = false;
-        isFinished = false;
+        if (currentCoroutine != null) StopCoroutine(currentCoroutine);
     }
 }
