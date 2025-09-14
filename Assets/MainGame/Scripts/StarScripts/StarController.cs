@@ -53,9 +53,12 @@ public class StarController : MonoBehaviour, IInteract, IPool {
 
         transform.name = starName;
         transform.position = RandomVec3(UIManager.Instance.spawnRange.Value);
+
+        ChangeColour(Color.black);
     }
 
     public void ChangeParticleColor(Color color) => particlesMain.startColor = color;
+    public void ChangeParticleColor() => particlesMain.startColor = Random.ColorHSV();
 
     Vector3 RandomVec3(float range) {
         return new Vector3(Random.Range(-range, range), Random.Range(-range, range), Random.Range(-range, range));
@@ -64,6 +67,6 @@ public class StarController : MonoBehaviour, IInteract, IPool {
     public void ChangeColour(Color colour) { backDrop.color = colour; }
 
     public void Interact() {
-        StartCoroutine(PathFinder.instance.SelectDestination(this));
+        PathFinder.instance.SelectDestination(this);
     }
 }

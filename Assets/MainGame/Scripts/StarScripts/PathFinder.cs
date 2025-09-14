@@ -3,15 +3,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PathFinder : MonoBehaviour {
 
     [Header("StarList")]
     public static PathFinder instance;
-    UIManager _uiManager;
+    UIManager canvas;
     PathManager _pathManager;
     CoroutineManager cm;
+
+    IEnumerator pathOptionsIEnum;
 
     [Space]
     [Header("Script References")]
@@ -24,15 +28,19 @@ public class PathFinder : MonoBehaviour {
 
     private void Start() {
         starGen = StarGeneration.instance;
-        _uiManager = UIManager.Instance;
+        canvas = UIManager.Instance;
         cm = CoroutineManager.Instance;
+    }
+
+    public void PathFinderReset() {
+        isSearchingForPath = false;
     }
 
     public void OnStarsGenerate() {
         SetupPathStart(null, Color.black, Color.black, -1, -1, UIManager.empty, UIManager.empty);
     }
 
-    IEnumerator RouteCalculater() {
+    void RouteCalculater() {
 
         //Set up beginning values
         isSearchingForPath = true;
@@ -43,11 +51,11 @@ public class PathFinder : MonoBehaviour {
         starGen.leadingStar = new int[StarGeneration._starList.Count];
         starGen.cost[starGen.startStarInt] = 0;
 
-        //Find the baseCost paths from LEFT to TOP
-        StartCoroutine(cm.RunCoroutine(UIManager.Instance.LoadingStarFlash("Calculating")));
-        yield return PathFindOptions();
-        cm.ActivateFinish();
+        cm.ManageStartCoroutine(PathFindOptions(), canvas.LoadingStarFlash("Loading", true), canvas.ResetLoadStar, "LoadStar");
+    
+    }
 
+    void PathFinalSetup() {
         if (StarGeneration._starList.Count > 1 && StarGeneration.instance.finalStarPath.Count > 1) {
             UIManager.Instance.UpdatePathList(true);
             ShipController.instance.ShipSetup();
@@ -61,7 +69,7 @@ public class PathFinder : MonoBehaviour {
     }
 
     //Select the stars to travel between where the first selected star is the start
-    public IEnumerator SelectDestination(StarController selectedStar) {
+    public void SelectDestination(StarController selectedStar) {
         PathManager.instance.DisplayAllPaths();
         starGen.finalStarPath.Clear();
         int counter;
@@ -73,7 +81,7 @@ public class PathFinder : MonoBehaviour {
 
                 foreach (StarController star in StarGeneration._starList) {
                     if (star == selectedStar) {
-                        SetupPathStart(_uiManager.starSelectAudio, Color.green, Color.black, counter, -1, star.name, UIManager.empty);
+                        SetupPathStart(canvas.starSelectAudio, Color.green, Color.black, counter, -1, star.name, UIManager.empty);
                         break;
                     }
                     counter++;
@@ -85,14 +93,14 @@ public class PathFinder : MonoBehaviour {
                 foreach (StarController star in StarGeneration._starList) {
                     //Selects 2nd star if successful
                     if (star == selectedStar && counter != starGen.startStarInt) {
-                        SetupPathStart(_uiManager.starSelectAudio, Color.green, Color.green, starGen.startStarInt, counter, null, star.name);
-                        yield return RouteCalculater();
+                        SetupPathStart(canvas.starSelectAudio, Color.green, Color.green, starGen.startStarInt, counter, null, star.name);
+                        RouteCalculater();
                         break;
                     }
 
                     //If the same star is selected, deselect 1st star
                     else if (star == selectedStar && counter == starGen.startStarInt) {
-                        SetupPathStart(_uiManager.starDeselectAudio, Color.black, Color.black, -1, -1, UIManager.empty, UIManager.empty);
+                        SetupPathStart(canvas.starDeselectAudio, Color.black, Color.black, -1, -1, UIManager.empty, UIManager.empty);
                         break;
                     }
                     counter++;
@@ -115,8 +123,8 @@ public class PathFinder : MonoBehaviour {
         starGen.startStarInt = start;
         starGen.starDestinationInt = end;
 
-        if (startText != null) _uiManager._startStarTextUI.text = startText;
-        if (endText != null) _uiManager._endStarTextUI.text = endText;
+        if (startText != null) canvas._startStarTextUI.text = startText;
+        if (endText != null) canvas._endStarTextUI.text = endText;
     }
 
     public void EndPathfinding() {
@@ -126,8 +134,10 @@ public class PathFinder : MonoBehaviour {
     IEnumerator PathFindOptions() {
         switch (UIManager.Instance.pathfindingOptions.value) {
             case 0: yield return BackTrack(UIManager.Instance.quickFindToggle.isOn); break;
-            case 1: yield return Dijkstra(UIManager.Instance.quickFindToggle.isOn); break;
+            case 1: yield return QuickBackTrack(UIManager.Instance.quickFindToggle.isOn); break;
+            case 2: yield return Dijkstra(UIManager.Instance.quickFindToggle.isOn); break;
         }
+        PathFinalSetup();
     }
     void OptimizationOptions(List<int> list) {
         switch (UIManager.Instance.optimizationOptions.value) {
@@ -136,23 +146,35 @@ public class PathFinder : MonoBehaviour {
         }
     }
 
+    float cost;
+    float bestCost = Mathf.Infinity;
+    List<int> finalList = new List<int>();
     //Finds best path based on dictionary in _starlist variable
     IEnumerator BackTrack(bool quick) {
 
         isSearchingForPath = true;
-        List<int> checkedStars = new List<int>(); 
-        List<int> backtrackList = new List<int>(); 
-        List<int> finalList = new List<int>();
+        List<int> checkedStars = new List<int>();
+        List<int> backtrackList = new List<int>();
+        finalList = new List<int>();
 
-        bool foundNextPath;
-        float cost;
-        float bestCost = Mathf.Infinity;
         checkedStars.Add(starGen.startStarInt);
         backtrackList.Add(starGen.startStarInt);
+        canvas.setLoadSliderMax = 1;
+        canvas.setLoadSliderValue = 0;
+        yield return CheckPath(new List<int> { starGen.startStarInt }, 1, 0);
+        OptimizationOptions(finalList);
+    }
+    IEnumerator QuickBackTrack(bool quick) {
 
-        //Keep looping until the whole area is backtracked
+        List<int> checkedStars = new List<int>();
+        List<int> backtrackList = new List<int>();
+        finalList = new List<int>();
+        checkedStars.Add(starGen.startStarInt);
+        backtrackList.Add(starGen.startStarInt);
+        canvas.setLoadSliderMax = 1;
+        canvas.setLoadSliderValue = 0.5f;
+
         while (true) {
-            foundNextPath = false;
 
             //Check end of list to see any potential paths to check
             foreach (int x in GetListOfPaths(backtrackList.Last())) {
@@ -160,34 +182,51 @@ public class PathFinder : MonoBehaviour {
                 if (!checkedStars.Contains(x)) {
                     checkedStars.Add(x);
                     backtrackList.Add(x);
-                    foundNextPath = true;
 
-                    if (backtrackList.Last() == starGen.starDestinationInt) {
-                        cost = StarGeneration.GetPathCost(backtrackList);
-                        if (cost < bestCost) {
-                            bestCost = cost;
-                            finalList = new List<int>(backtrackList);
-                        }
-                    }
-                    break;
+                    goto FoundPath;
                 }
             }
 
-            //If there are no more next paths to take, remove the final list item
-            if (!foundNextPath) {
-                backtrackList.RemoveAt(backtrackList.Count - 1);
-                if (backtrackList.Count < 1) {
-                    break;
-                }
-            }
-            if (backtrackList.Last() == starGen.starDestinationInt && quick) {
+            //Backtrack 1 space
+            backtrackList.RemoveAt(backtrackList.Count - 1);
+            if (backtrackList.Count < 1)
+                break;
+
+            FoundPath:
+            if (backtrackList.Last() == starGen.starDestinationInt) {
+                finalList = new List<int>(backtrackList);
                 break;
             }
             yield return null;
         }
+        OptimizationOptions(finalList);
+    }
 
-        if (finalList.Count > 1) {
-            OptimizationOptions(finalList);
+    IEnumerator CheckPath(List<int> currentPathCheck, float currentSectionPercentage, float cumulativePercentage) {
+
+        yield return null;
+        if (canvas.quickFindToggle.isOn && finalList.Last() == starGen.starDestinationInt) yield break;
+
+        if (currentPathCheck.Last() == starGen.starDestinationInt) {
+            cost = StarGeneration.GetPathCost(currentPathCheck);
+            if (cost < bestCost) {
+                bestCost = cost;
+                finalList = new List<int>(currentPathCheck);
+                print("Cost: "+cost+", LIST = " + string.Join(", ", currentPathCheck));
+                if (canvas.quickFindToggle.isOn && currentPathCheck.Last()==starGen.starDestinationInt) yield break;
+            }
+        }
+
+        List<int> paths = GetListOfPaths(currentPathCheck.Last());
+        float pathPercent=0;
+
+        foreach (int i in paths) {
+            pathPercent += currentSectionPercentage / paths.Count;
+            if (!currentPathCheck.Contains(i)) {
+                canvas.setLoadSliderValue = (cumulativePercentage + pathPercent);
+                //print("Percent = "+ (cumulativePercentage + pathPercent) + ". ("+cumulativePercentage+""+pathPercent+"). Check " + currentPathCheck.Concat(new[] { i }).ToList() + ".");
+                yield return CheckPath(currentPathCheck.Concat(new[] {i }).ToList(), currentSectionPercentage/paths.Count, cumulativePercentage+pathPercent);
+            }
         }
     }
 

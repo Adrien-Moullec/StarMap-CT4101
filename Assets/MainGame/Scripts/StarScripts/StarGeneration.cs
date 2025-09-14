@@ -10,8 +10,7 @@ public class StarGeneration : MonoBehaviour {
     public static List<StarController> _starList = new List<StarController>();
     public static Dictionary<Vector2Int, PathList> possibleStarPaths = new Dictionary<Vector2Int, PathList>();
     UIManager canvas;
-
-    IEnumerator LoadingStarSymbol;
+    CoroutineManager cm;
 
     [Space]
     [Header("Object/Prefabs")]
@@ -35,6 +34,8 @@ public class StarGeneration : MonoBehaviour {
     public int[] leadingStar; //Previous cheapest baseCost star to get back to the starting star
     public List<StarController> finalStarPath = new List<StarController>();
 
+    IEnumerator GenerateStars;
+
     public List<Vector3> positionStarPath {
         get {
             List<Vector3> res = new List<Vector3>();
@@ -50,8 +51,8 @@ public class StarGeneration : MonoBehaviour {
     }
     private void Start() {
         canvas = UIManager.Instance;
-        LoadingStarSymbol = canvas.LoadingStarFlash("Calculating");
-        EvilRegionCenter = new Vector3(Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value), Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value), Random.Range(-canvas.evilRegionRange.Value, canvas.evilRegionRange.Value));
+        cm = CoroutineManager.Instance;
+        EvilRegionCenter = GetRandomSpherePoint(canvas.evilRegionRange.Value);
     }
 
     public static float GetPathCost(List<int> path) {
@@ -71,27 +72,26 @@ public class StarGeneration : MonoBehaviour {
         _starList.Clear();
 
         for (int i = 0; i < canvas.spawnCount.Value; i++) {
-            Vector3 pos = new Vector3(Random.Range(-canvas.spawnRange.Value, canvas.spawnRange.Value), Random.Range(-canvas.spawnRange.Value, canvas.spawnRange.Value), Random.Range(-canvas.spawnRange.Value, canvas.spawnRange.Value));
+            Vector3 pos = GetRandomSpherePoint(canvas.spawnRange.Value);
             PoolManager.Instance.TrySpawnFromPool<StarController>("star", out StarController tempStar);
-            tempStar.starName = StarPetNames.names[Random.Range(0, StarPetNames.names.Length)] +"-"+ i.ToString();
+            tempStar.starName = UIManager.planetNames[Random.Range(0, UIManager.planetNames.Count)] +"-"+ i.ToString();
             _starList.Add(tempStar);
+            tempStar.transform.position = pos;
         }
         PathFinder.instance.OnStarsGenerate();
 
-        StartCoroutine(StarPathsCalc());
+        cm.ManageStartCoroutine(StarPathsCalc(), canvas.LoadingStarFlash("Loading", true), canvas.ResetLoadStar, "LoadStar");
     }
 
     //Find the path costs & Finding the closest star to the center :3
     public IEnumerator StarPathsCalc() {
-
-
         int tempStarInt = 0;
         float tempCost;
         possibleStarPaths.Clear();
-        canvas.SetLoadStarBarMax(_starList.Count);
+        canvas.setLoadSliderMax = _starList.Count;
 
         for (int startStar = 0; startStar < _starList.Count; startStar++) {
-            canvas.SetLoadStarBar(startStar);
+            canvas.setLoadSliderValue = startStar;
 
             if (Vector3.Distance(_starList[startStar].transform.position, Vector3.zero) < Vector3.Distance(_starList[tempStarInt].transform.position, Vector3.zero)) {
                 tempStarInt = startStar;
@@ -112,8 +112,7 @@ public class StarGeneration : MonoBehaviour {
 
         PathManager.instance.DisplayAllPaths();
 
-        StopCoroutine(LoadingStarSymbol);
-        canvas.SetLoadStarOpacity(0);
+        canvas.loadingStarActive = false;
     }
 
     void CheckStarPath(int start, int end, float costCheck) {
@@ -140,33 +139,45 @@ public class StarGeneration : MonoBehaviour {
         if (Vector3.Distance(EvilRegionCenter, _starList[checkStar].transform.position) < canvas.evilRegionRange.Value) {
             _starList[checkStar].ChangeParticleColor(Color.red);
             return true;
+        } else {
+            _starList[checkStar].ChangeParticleColor();
+            return false;
         }
-        return false;
     }
 
-    //Resets everything to generate new stars
-    public void ResetInitiation() {
-        canvas.starSelectAudio.Play();
+    Vector3 GetRandomCubePoint(float range) {
+        return new Vector3(Random.Range(-range, range), Random.Range(-range, range), Random.Range(-range, range));
+    }
+
+    Vector3 randSpherePoint;
+    Vector3 GetRandomSpherePoint(float radius) {
+        Vector3 randSpherePoint = GetRandomCubePoint(radius);
+        if (Vector3.Distance(Vector3.zero, randSpherePoint) > radius) return GetRandomSpherePoint(radius);
+        return randSpherePoint;
+    }
+
+    public void ResetStarGeneration() {
         PoolManager.Instance.DespawnByTag("star");
         canvas.ResetStars();
-        PathManager.instance.ClearPaths();
-
-        finalStarPath.Clear();
-        possibleStarPaths.Clear();
         _starList.Clear();
-        hasGeneratedPaths = false;
-
-        StopCoroutine(LoadingStarSymbol);
-        StartCoroutine(LoadingStarSymbol);
+        ClearPathsAndLoadingStarData();
         GenerateStarList();
     }
-}
 
-//A list of random names for stars
-public class StarPetNames {
-    static public string[] names = {
-    "Max", "Bella", "Charlie", "Lucy", "Cooper", "Daisy", "Rocky", "Lola", "Buddy", "Sadie", "Jack", "Molly", "Duke", "Lily", "Teddy", "Ruby", "Toby", "Maggie", "Oliver", "Chloe", "Leo", "Sophie", "Winston", "Roxy", "Milo", "Zoey", "Oscar", "Penny", "Riley", "Gracie", "Abby", "Bear", "Coco", "Jackson", "Layla", "Harvey", "Stella", "Bentley", "Willow", "Sammy", "Murphy", "Luna", "Gus", "Daryl", "James", "Olive", "Rosie", "Hazel", "Gizmo", "Nala", "Louie", "Princess", "Dexter", "Maya", "Bruno", "Phoebe", "Jasper", "Piper", "Penelope", "Henry", "Winnie", "Archie", "Ellie", "Zeus", "Millie", "Boomer", "Lulu", "Diesel", "Apollo", "Poppy", "Buster", "Dixie", "Brody", "Finn", "Chase", "Marley", "Kobe", "Baxter", "Beau", "Gunner", "Tucker", "Leo", "Jax"
-    };
+    public void ResetPathsGeneration() {
+        ClearPathsAndLoadingStarData();
+        cm.ManageStartCoroutine(StarPathsCalc(), canvas.LoadingStarFlash("Loading", true), canvas.ResetLoadStar, "LoadStar");
+    }
+
+    public void ClearPathsAndLoadingStarData() {
+        canvas.starSelectAudio.Play();
+        CoroutineManager.Instance.ForceStopCoroutine("LoadStar");
+        PathManager.instance.ClearPaths();
+        finalStarPath.Clear();
+        possibleStarPaths.Clear();
+        hasGeneratedPaths = false;
+        PathFinder.instance.PathFinderReset();
+    }
 }
 
 [System.Serializable]

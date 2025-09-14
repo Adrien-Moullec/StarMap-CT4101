@@ -15,6 +15,9 @@ public class UIManager : MonoBehaviour {
     [SerializeField] public TextMeshProUGUI _starPathTextUI;
 
     public const string empty = "---";
+
+    TextAsset JsonFile;
+    public static List<string> planetNames = new List<string>();
     #endregion
 
     #region Audio
@@ -54,6 +57,21 @@ public class UIManager : MonoBehaviour {
     [SerializeField] TextMeshProUGUI loadingStarText;
     [SerializeField] RawImage loadingStarImage;
     [SerializeField] Slider loadingSlider;
+    [HideInInspector] public bool loadingStarActive {
+        get { return loadingStarImage.gameObject.activeSelf; }
+        set {
+            loadingStarImage.gameObject.SetActive(value);
+            SetLoadStarOpacity(0);
+        }
+    }
+    [HideInInspector] public float setLoadSliderValue {
+        get { return loadingSlider.value; }
+        set { loadingSlider.value = value; }
+    }
+    [HideInInspector] public int setLoadSliderMax {
+        get { return (int)loadingSlider.maxValue; }
+        set { loadingSlider.maxValue = value; }
+    }
 
     //Colors
     Color imageColor;
@@ -62,6 +80,9 @@ public class UIManager : MonoBehaviour {
     private void Awake() {
         Instance = this;
         loadingStarImage.gameObject.SetActive(false);
+        JsonFile = Resources.Load<TextAsset>("PlanetNames");
+        PlanetNameList nameList = JsonUtility.FromJson<PlanetNameList>(JsonFile.text);
+        planetNames = new List<string>(nameList.PlanetNames);
 
         #region Setting slider values
         spawnRange.Awaken();
@@ -92,38 +113,33 @@ public class UIManager : MonoBehaviour {
     }
 
     //Make the loading star flash by changing alpha value
-    public IEnumerator LoadingStarFlash(string message) {
+    public IEnumerator LoadingStarFlash(string message, bool showSlider) {
+        loadingSlider.gameObject.SetActive(showSlider);
         float alphaValue;
         float time = 0;
         loadingStarText.text = message;
-        loadingStarImage.gameObject.SetActive(true);
+        loadingStarActive = true;
 
         while (true) {
-            time += Time.deltaTime; time = time > (4*Mathf.PI) ? 0 : time;
+            time += Time.deltaTime; time = time > (4 * Mathf.PI) ? 0 : time;
             alphaValue = Mathf.Abs(Mathf.Sin(time));
-            print(alphaValue);
             SetLoadStarOpacity(alphaValue);
 
             yield return null;
         }
     }
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SET Interface for star load specifically???????????????
+    public IEnumerator LoadingStarFlash(string message) {
+        yield return LoadingStarFlash(message, false);
+    }
     public void SetLoadStarOpacity(float alpha) {
         imageColor.a = alpha; textColor.a = alpha;
         loadingStarImage.color = imageColor; loadingStarText.color = textColor;
     }
-    public void DisableStar() {
-        loadingStarImage.gameObject.SetActive(false);
-        imageColor.a = 0; textColor.a = 0;
-        loadingStarImage.color = imageColor; loadingStarText.color = textColor;
-    }
-
-    public void SetLoadStarBar(int num) {
-        loadingSlider.value = num;
-        //if (alpha == 0 || alpha == 1)  
-    }
-    public void SetLoadStarBarMax(int num) {
-        loadingSlider.maxValue = num;
+    public void ResetLoadStar() {
+        SetLoadStarOpacity(0);
+        setLoadSliderValue = 0;
+        setLoadSliderMax = 1;
+        loadingStarActive = false;
     }
 
     public void UpdatePathList(bool foundPath) {
@@ -151,4 +167,8 @@ public class UIManager : MonoBehaviour {
         _starPathTextUI.text = "";
         _starPathTextUI.color = Color.black;
     }
+}
+
+public class PlanetNameList {
+    public string[] PlanetNames;
 }
